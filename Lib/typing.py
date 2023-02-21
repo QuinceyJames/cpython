@@ -839,7 +839,7 @@ class ForwardRef(_Final, _root=True):
         except SyntaxError:
             raise SyntaxError(f"Forward reference must be an expression -- got {arg!r}")
 
-        self.__forward_arg__ = arg
+        self.__forward_arg__ = arg.strip("\'\"")
         self.__forward_code__ = code
         self.__forward_evaluated__ = False
         self.__forward_value__ = None
