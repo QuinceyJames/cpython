@@ -4680,6 +4680,30 @@ class ForwardRefTests(BaseTestCase):
         self.assertEqual(X | "x", Union[X, "x"])
         self.assertEqual("x" | X, Union["x", X])
 
+    def test_global_get_type_hints(self):
+        # See: https://github.com/python/cpython/issues/86153#issuecomment-1093886660
+        # Note: Due to the limitations of PEP563, the following class must be defined in
+        # a global namespace and not inside of this test function. Additionally, the
+        # __future__ import needs to happen in a dedicated module. Instead, we use a
+        # string-exec block with an empty dict passed in as globals
+
+        from io import StringIO
+        from contextlib import redirect_stdout
+        with StringIO() as f:
+            with redirect_stdout(f):
+                exec("""
+
+from __future__ import annotations
+from typing import get_type_hints
+
+class C:
+    def func(self, a: "C"):
+        pass
+
+    print(get_type_hints(func))
+
+""", {})
+            self.assertEqual(f.getvalue().strip(), "{'a': ForwardRef('C')}")
 
 @lru_cache()
 def cached_func(x, y):
